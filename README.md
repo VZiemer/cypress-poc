@@ -1,27 +1,40 @@
-# CypressAngularPoc
+# Cypress Testing with Docker and AWS Fargate
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.1.3.
+This project demonstrates how to set up and run Cypress tests using Docker and AWS Fargate. The setup involves building a Docker image with Cypress tests, pushing the image to Amazon ECR, and creating a task definition in Amazon ECS to execute the tests.
 
-## Development server
+## Prerequisites
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+- Docker installed on your local machine
+- AWS CLI configured with appropriate credentials
+- AWS account with permissions to access ECS, ECR, and CloudWatch Logs
 
-## Code scaffolding
+## Setup
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+### 1. Docker Setup
 
-## Build
+1. **Create a `Dockerfile`:**
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+   ```dockerfile
+   # Use the Cypress included image as the base
+   FROM cypress/included:13.11.0
 
-## Running unit tests
+   # Define the working directory in the container
+   WORKDIR /app
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+   # Copy Cypress tests and configuration to the container
+   COPY cypress /app/cypress
+   COPY cypress.config.ts /app/cypress.config.ts
 
-## Running end-to-end tests
+   # Verify Cypress installation
+   RUN npx cypress verify
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+   # Define the entrypoint to run Cypress tests
+   ENTRYPOINT ["npx", "cypress", "run"]
 
-## Further help
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Run `aws ecr create-repository --repository-name my-cypress-project`
+
+Run `aws ecr get-login-password --region <your-region> | docker login --username AWS --password-stdin <your-account-id>.dkr.ecr.<your-region>.amazonaws.com`
+
+Run `docker tag my-cypress-project:latest <your-account-id>.dkr.ecr.<your-region>.amazonaws.com/my-cypress-project:latest
+docker push <your-account-id>.dkr.ecr.<your-region>.amazonaws.com/my-cypress-project:latest`
