@@ -9,5 +9,12 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
+
+  counter = 0
+
   title = 'cypress-angular-poc';
+
+  clickButton():void {
+    this.counter++;
+  }
 }
